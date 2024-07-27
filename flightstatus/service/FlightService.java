@@ -1,4 +1,4 @@
--- package com.example.flightstatus.service;
+package com.example.flightstatus.service;
 
 import com.example.flightstatus.model.Flight;
 import com.example.flightstatus.repository.FlightRepository;
@@ -22,14 +22,14 @@ public class FlightService {
 
     public Flight saveFlight(Flight flight) {
         Flight existingFlight = flightRepository.findById(flight.getId()).orElse(null);
-        if (existingFlight != null && !existingFlight.getStatus().equals(flight.getStatus())) {
+        if (existingFlight != null && existingFlight.getStatus() != flight.getStatus()) {
             sendNotification(flight);
         }
         return flightRepository.save(flight);
     }
 
     private void sendNotification(Flight flight) {
-        String message = String.format("Flight %s status changed to %s", flight.getFlightNumber(), flight.getStatus());
-        rabbitTemplate.convertAndSend("flightStatusExchange", "flight.status.update", message);
+        String message = "Flight " + flight.getNumber() + " status changed to " + flight.getStatus();
+        rabbitTemplate.convertAndSend("flightStatusQueue", message);
     }
 }
